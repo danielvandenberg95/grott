@@ -344,7 +344,10 @@ class GrottHttpRequestHandler(http.server.BaseHTTPRequestHandler):
                     body = body + "0000000000000000000000000000000000000000"
                 body = body + "{:04x}".format(int(register))
                 #assumption now only 1 reg query; other put below end register
-                body = body + "{:04x}".format(int(register))
+                registercount = 1
+                if int(urlquery["registercount"][0]) > 0 :
+                    registercount = int(urlquery["registercount"][0])
+                body = body + "{:04x}".format(int(register + registercount - 1))
                 #calculate length of payload = body/2 (str => bytes) + 2 bytes invertid + command. 
                 bodylen = int(len(body)/2+2)
                 
