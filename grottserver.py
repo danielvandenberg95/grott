@@ -323,17 +323,21 @@ class GrottHttpRequestHandler(http.server.BaseHTTPRequestHandler):
                     try:
                         if sendcommand == "05" :
                             inverterid_found = False
-                            try:
-                                #test if inverter id is specified and get loggerid
-                                inverterid = urlquery["inverter"][0]
-                                for key in loggerreg.keys() :
-                                    for key2 in loggerreg[key].keys() :
-                                        if key2 == inverterid :
-                                            dataloggerid = key
-                                            inverterid_found = True
-                                            break
-                            except :
-                                inverterid_found = False
+                            if urlquery["datalogger"][0]:
+                                inverterid_found = True
+                                dataloggerid = urlquery["datalogger"][0]
+                            else:
+                                try:
+                                    #test if inverter id is specified and get loggerid
+                                    inverterid = urlquery["inverter"][0]
+                                    for key in loggerreg.keys() :
+                                        for key2 in loggerreg[key].keys() :
+                                            if key2 == inverterid :
+                                                dataloggerid = key
+                                                inverterid_found = True
+                                                break
+                                except :
+                                    inverterid_found = False
 
                             if not inverterid_found :
                                 responsetxt = b'no or no valid invertid specified'
