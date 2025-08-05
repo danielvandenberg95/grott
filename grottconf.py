@@ -1722,8 +1722,7 @@ class Conf :
             "bdc2_ibat"         : {"value" : 938,"length" : 2,"type" : "num","divide" : 10},
             "bdc2_soc"          : {"value" : 942,"length" : 2,"type" : "num","divide" : 1},
             "bdc2_vbus1"        : {"value" : 946,"length" : 2,"type" : "num","divide" : 10},
-            "bdc2_vbus2"        : {"value" : 950,"length" : 2,"type" : "
-                                   num","divide" : 10},
+            "bdc2_vbus2"        : {"value" : 950,"length" : 2,"type" : "num","divide" : 10},
             "bdc2_ibb"          : {"value" : 954,"length" : 2,"type" : "num","divide" : 10},
             "bdc2_illc"         : {"value" : 958,"length" : 2,"type" : "num","divide" : 10},
             "bdc2_tempa"        : {"value" : 962,"length" : 2,"type" : "num","divide" : 10},
@@ -2327,3 +2326,4 @@ class Conf :
             print(logger.level)
             logger.info("\t{0}".format(key))
             logger.debugv("\n{0}\n".format(format_multi_line("\t", str(self.alodict[key]),120)))
+
