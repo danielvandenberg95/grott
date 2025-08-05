@@ -19,5 +19,6 @@ jobs:
       run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
     - name: Build and push the Docker image
       run: |
-        docker build . --file docker/dockerfile --tag grott:$SHORT_SHA
+        docker build . --file docker/dockerfile --tag ghcr.io/${{ github.actor }}/grott:$SHORT_SHA
         docker push ghcr.io/${{ github.actor }}/grott:$SHORT_SHA
+
