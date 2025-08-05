@@ -20,6 +20,7 @@ COPY grottconf.py /app/grottconf.py
 COPY grottdata.py /app/grottdata.py
 COPY grottproxy.py /app/grottproxy.py
 COPY grottsniffer.py /app/grottsniffer.py
+COPY grottserver.py /app/grottserver.py
 # COPY grott.ini /app/grott.ini
 COPY grott_ha.py /app/grott_ha.py
 
