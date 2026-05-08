@@ -634,7 +634,7 @@ def procdata(conf,data):
                mqtt_publisher = MQTTPublisher(
                   hostname=conf.mqttip,
                   port=conf.mqttport,
-                  client_id=conf.inverterid,
+                  client_id="grott",#conf.inverterid,
                   auth=conf.pubauth,
                   socket_timeout=1.0
                   )
