@@ -574,11 +574,13 @@ def process_conf(conf: Conf):
 
 def publish_single(conf: Conf, topic, payload, retain=False):
     conf = process_conf(conf)
+    print("publishing single with", conf)
     return single(topic, payload=payload, retain=retain, **conf)
 
 
 def publish_multiple(conf: Conf, msgs):
     conf = process_conf(conf)
+    print("publishing multiple with", conf)
     return multiple(msgs, **conf)
 
 
