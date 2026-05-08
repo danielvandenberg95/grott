@@ -535,15 +535,15 @@ class MqttStateHandler:
     __pv_config = {}
 
     client = mqtt.Client(client_id="grott")
-    connected = False
+    client.connected = False
     def on_connect(client, userdata, flags, reason_code):
         print(f"Connected with result code {reason_code}")
-        connected = reason_code == 0
+        client.connected = reason_code == 0
     client.on_connect = on_connect
 
     def on_disconnect(client, userdata, reason_code):
         logging.info("disconnecting reason  "  +str(reason_code))
-        connected = False
+        client.connected = False
 
     @classmethod
     def connect(cls, conf: Conf):
@@ -563,8 +563,9 @@ class MqttStateHandler:
             port = int(port)
         cls.client.loop_start()
         cls.client.connect(conf.extvar["ha_mqtt_host"], port)
-        while (not cls.connected):
+        while (not cls.client.connected):
             time.sleep(1)
+        print("MQTT Connected!")
 
 
     @classmethod
