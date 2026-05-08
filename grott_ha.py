@@ -533,7 +533,6 @@ def make_payload(conf: Conf, device: str, name: str, key: str, unit: str = None)
 
 class MqttStateHandler:
     __pv_config = {}
-    __conf = None
 
     client = mqtt.Client(client_id="grott")
     connected = False
@@ -547,8 +546,7 @@ class MqttStateHandler:
         connected = False
 
     @classmethod
-    def connect(conf: Conf):
-        __conf = conf
+    def connect(cls, conf: Conf):
         required_params = [
             "ha_mqtt_host",
             "ha_mqtt_port",
@@ -558,14 +556,14 @@ class MqttStateHandler:
             raise AttributeError
 
         if "ha_mqtt_user" in conf.extvar:
-            client.username_pw_set(conf.extvar["ha_mqtt_user"], conf.extvar["ha_mqtt_password"])
+            cls.client.username_pw_set(conf.extvar["ha_mqtt_user"], conf.extvar["ha_mqtt_password"])
         
         port = conf.extvar["ha_mqtt_port"]
         if isinstance(port, str):
             port = int(port)
-        client.loop_start()
-        client.connect(conf.extvar["ha_mqtt_host"], port)
-        while (not connected):
+        cls.client.loop_start()
+        cls.client.connect(conf.extvar["ha_mqtt_host"], port)
+        while (not cls.connected):
             time.sleep(1)
 
 
