@@ -661,7 +661,7 @@ def grottext(conf: Conf, data: str, jsonmsg: str):
     # Push the vales to the topics
     try:
         publish(
-            conf, state_topic.format(device=device_serial), json.dumps(values)
+            state_topic.format(device=device_serial), json.dumps(values)
         )
     except Exception as e:
         print("[HA ext] - Exception while publishing - {}".format(e))
