@@ -532,7 +532,7 @@ def make_payload(conf: Conf, device: str, name: str, key: str, unit: str = None)
 
 class MqttStateHandler:
     __pv_config = {}
-    client_name = "Grott - HA"
+    client_name = "grott"
 
     @classmethod
     def is_configured(cls, serial: str):
