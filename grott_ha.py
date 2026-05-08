@@ -4,7 +4,8 @@
 import json
 from datetime import datetime, timezone
 
-from paho.mqtt.publish import single, multiple
+import paho.mqtt.client as mqtt
+import time
 
 from grottconf import Conf
 
@@ -532,7 +533,41 @@ def make_payload(conf: Conf, device: str, name: str, key: str, unit: str = None)
 
 class MqttStateHandler:
     __pv_config = {}
-    client_name = "grott"
+    __conf = None
+
+    client = mqtt.Client(client_id="grott")
+    connected = False
+    def on_connect(client, userdata, flags, reason_code, properties):
+        print(f"Connected with result code {reason_code}")
+        connected = reason_code == 0
+    client.on_connect = on_connect
+
+    def on_disconnect(client, userdata, rc):
+        logging.info("disconnecting reason  "  +str(rc))
+        connected = False
+
+    @classmethod
+    def connect(conf: Conf):
+        __conf = conf
+        required_params = [
+            "ha_mqtt_host",
+            "ha_mqtt_port",
+        ]
+        if not all([param in conf.extvar for param in required_params]):
+            print("Missing configuration for ha_mqtt")
+            raise AttributeError
+
+        if "ha_mqtt_user" in conf.extvar:
+            client.username_pw_set(conf.extvar["ha_mqtt_user"], conf.extvar["ha_mqtt_password"])
+        
+        port = conf.extvar["ha_mqtt_port"]
+        if isinstance(port, str):
+            port = int(port)
+        client.loop_start()
+        client.connect(conf.extvar["ha_mqtt_host"], port)
+        while (not connected):
+            time.sleep(1)
+
 
     @classmethod
     def is_configured(cls, serial: str):
@@ -542,46 +577,8 @@ class MqttStateHandler:
     def set_configured(cls, serial: str):
         cls.__pv_config[serial] = True
 
-
-def process_conf(conf: Conf):
-    required_params = [
-        "ha_mqtt_host",
-        "ha_mqtt_port",
-    ]
-    if not all([param in conf.extvar for param in required_params]):
-        print("Missing configuration for ha_mqtt")
-        raise AttributeError
-
-    if "ha_mqtt_user" in conf.extvar:
-        auth = {
-            "username": conf.extvar["ha_mqtt_user"],
-            "password": conf.extvar["ha_mqtt_password"],
-        }
-    else:
-        auth = None
-
-    # Need to convert the port if passed as a string
-    port = conf.extvar["ha_mqtt_port"]
-    if isinstance(port, str):
-        port = int(port)
-    return {
-        "client_id": MqttStateHandler.client_name,
-        "auth": auth,
-        "hostname": conf.extvar["ha_mqtt_host"],
-        "port": port,
-    }
-
-
-def publish_single(conf: Conf, topic, payload, retain=False):
-    conf = process_conf(conf)
-    print("publishing single with", conf)
-    return single(topic, payload=payload, retain=retain, **conf)
-
-
-def publish_multiple(conf: Conf, msgs):
-    conf = process_conf(conf)
-    print("publishing multiple with", conf)
-    return multiple(msgs, **conf)
+def publish(topic, payload, retain=False):
+    MqttStateHandler.client.publish(topic, payload=payload, retain=retain)
 
 
 def grottext(conf: Conf, data: str, jsonmsg: str):
@@ -616,7 +613,8 @@ def grottext(conf: Conf, data: str, jsonmsg: str):
     if not MqttStateHandler.is_configured(device_serial) and getattr(
         conf, "layout", None
     ):
-        configs_payloads = []
+        print(f"\tGrott HA {__version__} - Connecting MQTT")
+        MqttStateHandler.connect(conf)
         print(f"\tGrott HA {__version__} - creating {device_serial} config in HA")
         for key in values.keys():
             # Generate a configuration payload
@@ -631,13 +629,7 @@ def grottext(conf: Conf, data: str, jsonmsg: str):
                     device=device_serial,
                     attribut=key,
                 )
-                configs_payloads.append(
-                    {
-                        "topic": topic,
-                        "payload": json.dumps(payload),
-                        "retain": True,
-                    }
-                )
+                publish(topic, json.dumps(payload), True)
             except Exception as e:
                 print(
                     f"\t - [grott HA] {__version__} Exception while creating new sensor {key}: {e}"
@@ -654,19 +646,12 @@ def grottext(conf: Conf, data: str, jsonmsg: str):
                 device=device_serial,
                 attribut=key,
             )
-            configs_payloads.append(
-                {
-                    "topic": topic,
-                    "payload": json.dumps(payload),
-                    "retain": True,
-                }
-            )
+            publish(topic, json.dumps(payload), True)
         except Exception as e:
             print(
                 f"\t - [grott HA] {__version__} Exception while creating new sensor last push: {e}"
             )
             return 4
-        publish_multiple(conf, configs_payloads)
         # Now it's configured, no need to come back
         MqttStateHandler.set_configured(device_serial)
 
@@ -676,7 +661,7 @@ def grottext(conf: Conf, data: str, jsonmsg: str):
 
     # Push the vales to the topics
     try:
-        publish_single(
+        publish(
             conf, state_topic.format(device=device_serial), json.dumps(values)
         )
     except Exception as e:
