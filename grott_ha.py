@@ -536,13 +536,13 @@ class MqttStateHandler:
 
     client = mqtt.Client(client_id="grott")
     connected = False
-    def on_connect(client, userdata, flags, reason_code, properties):
+    def on_connect(client, userdata, flags, reason_code):
         print(f"Connected with result code {reason_code}")
         connected = reason_code == 0
     client.on_connect = on_connect
 
-    def on_disconnect(client, userdata, rc):
-        logging.info("disconnecting reason  "  +str(rc))
+    def on_disconnect(client, userdata, reason_code):
+        logging.info("disconnecting reason  "  +str(reason_code))
         connected = False
 
     @classmethod
